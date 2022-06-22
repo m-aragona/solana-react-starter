@@ -1,6 +1,6 @@
 {
     "version": "0.1.0",
-    "name": "nft_marketplace",
+    "name": "solana_mainnet_test_2",
     "instructions": [
         {
             "name": "mintNft",
@@ -18,7 +18,7 @@
                 {
                     "name": "mint",
                     "isMut": true,
-                    "isSigner": false
+                    "isSigner": true
                 },
                 {
                     "name": "mintAuthority",
@@ -51,8 +51,38 @@
                     "isSigner": false
                 },
                 {
+                    "name": "associatedTokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
                     "name": "tokenMetadataProgram",
                     "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "collectionUpdateAuth",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "collectionMint",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "collectionMetadata",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "collectionMasterEd",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "creatorAccount1",
+                    "isMut": true,
                     "isSigner": false
                 }
             ],
@@ -70,9 +100,79 @@
                     "type": "string"
                 }
             ]
+        },
+        {
+            "name": "mintCollection",
+            "accounts": [
+                {
+                    "name": "masterEdition",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "metadata",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "mint",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "mintAuthority",
+                    "isMut": true,
+                    "isSigner": true
+                },
+                {
+                    "name": "payer",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "rent",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "systemProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenAccount",
+                    "isMut": true,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "associatedTokenProgram",
+                    "isMut": false,
+                    "isSigner": false
+                },
+                {
+                    "name": "tokenMetadataProgram",
+                    "isMut": false,
+                    "isSigner": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "metadataUri",
+                    "type": "string"
+                },
+                {
+                    "name": "metadataTitle",
+                    "type": "string"
+                }
+            ]
         }
     ],
     "metadata": {
-        "address": "6LGmFHpmFmBdv2UnsopN8A4qdAcBrniiikoZjpJ8ti5S"
+        "address": "Dg47bqBDTxzVuM5jiioyNc5wCwHoSkEi6A7ZrAo43Gyk"
     }
 }

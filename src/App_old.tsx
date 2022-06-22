@@ -105,16 +105,90 @@ const Content: FC = () => {
         const b = JSON.parse(a)
         const program = new Program(b, idl.metadata.address, provider)
 
+
+        //const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+        var recieverWallet = new PublicKey("8xSyMdKQNCkRJB7LiebZ2yu26PTURxyRG7oS6f8Y4JUc");
+
+        let transaction = new Transaction();
+
+        //const private_key_bytes = [240,239,30,228,114,38,221,180,25,247,255,68,156,85,23,175,200,243,200,40,62,65,105,141,245,32,17,99,232,244,125,67,131,240,86,211,189,21,27,53,132,17,4,184,176,155,222,231,196,189,135,160,190,152,241,221,86,50,222,20,58,65,57,33]
+
         const mintKeypair = Keypair.generate();
 
-        console.log('Pub Key MintKeypair', mintKeypair.publicKey.toString())
+        //const mintKeypair = { publicKey: new PublicKey('AbqRanLfLvKhHihGZEPbk674TNLmavNdXkt4JuZta8Nd') }
+        console.log('Pub Key MintKeypair', mintKeypair.publicKey)
+        //console.log('Pub Key MintKeypair', mintKeypair.secretKey)
 
-        const tokenAccount = await getAssociatedTokenAddress(
+        const s_key = process.env.REACT_APP_SECRET_KEY
+
+        if (s_key) {
+            let seed = Uint8Array.from(
+                // s_key.split(",")
+                [240, 239, 30, 228, 114, 38, 221, 180, 25, 247, 255, 68, 156, 85, 23, 175, 200, 243, 200, 40, 62, 65, 105, 141, 245, 32, 17, 99, 232, 244, 125, 67, 131, 240, 86, 211, 189, 21, 27, 53, 132, 17, 4, 184, 176, 155, 222, 231, 196, 189, 135, 160, 190, 152, 241, 221, 86, 50, 222, 20, 58, 65, 57, 33]
+            ).slice(0, 32);
+            let KEYPAIRS = web3.Keypair.fromSeed(seed);
+        }
+        // create keypairs
+
+
+
+        const nftTokenAccount = await getAssociatedTokenAddress(
             mintKeypair.publicKey,
             wallet!.publicKey
         );
 
-        console.log('nftTokenAccount', tokenAccount.toString())
+        console.log('nftTokenAccount', nftTokenAccount.toString())
+
+        const requiredLamports: number = await program.provider.connection.getMinimumBalanceForRentExemption(
+            MINT_SIZE
+        );
+
+        console.log(wallet!.publicKey)
+        console.log(mintKeypair.publicKey)
+        console.log(MINT_SIZE)
+        console.log(TOKEN_PROGRAM_ID)
+        console.log('req lamports', requiredLamports)
+
+        transaction.add(
+
+            SystemProgram.createAccount({
+                fromPubkey: wallet!.publicKey,
+                newAccountPubkey: mintKeypair.publicKey,
+                space: MINT_SIZE,
+                programId: TOKEN_PROGRAM_ID,
+                lamports: requiredLamports,
+            }),
+            createInitializeMintInstruction(
+                mintKeypair.publicKey,
+                0,
+                wallet!.publicKey,
+                wallet!.publicKey
+            ),
+            createAssociatedTokenAccountInstruction(
+                wallet!.publicKey,
+                nftTokenAccount,
+                wallet!.publicKey,
+                mintKeypair.publicKey
+            )
+        );
+
+
+        transaction.feePayer = wallet!.publicKey;
+        const anyTransaction: any = transaction;
+        anyTransaction.recentBlockhash = (
+            await provider.connection.getLatestBlockhash()
+        ).blockhash;
+
+        transaction.partialSign(mintKeypair)
+
+        if (!transaction) return;
+        let signed = await wallet!.signTransaction(transaction);
+        console.log("Got signature, submitting transaction");
+        let signature = await provider.connection.sendRawTransaction(signed.serialize());
+        console.log("Submitted transaction " + signature + ", awaiting confirmation");
+        await provider.connection.confirmTransaction(signature);
+        console.log("Transaction " + signature + " confirmed");
+
 
         const metadataAddress = (await web3.PublicKey.findProgramAddress(
             [
@@ -138,20 +212,18 @@ const Content: FC = () => {
         ))[0];
         console.log('metadata Edition Address', masterEditionAddress.toString())
 
-        // const nftMetadataUri = "https://gateway.pinata.cloud/ipfs/QmWEUir6yEJX5YqLtJ8HXFiBLGhVn5DQ5Qif4sZPtjY6Be/0.json";
-        const nftMetadataUri = "https://gateway.pinata.cloud/ipfs/QmWEUir6yEJX5YqLtJ8HXFiBLGhVn5DQ5Qif4sZPtjY6Be/1.json";
-        // const nftMetadataUri = "https://gateway.pinata.cloud/ipfs/QmWEUir6yEJX5YqLtJ8HXFiBLGhVn5DQ5Qif4sZPtjY6Be/2.json";
-        // const nftMetadataUri = "https://gateway.pinata.cloud/ipfs/QmWEUir6yEJX5YqLtJ8HXFiBLGhVn5DQ5Qif4sZPtjY6Be/3.json";
+        const nftMetadataUri = "https://gateway.pinata.cloud/ipfs/QmP6thVszVMTQtw5zuFQjV5DU1Ddb7UaZzsvWadJvNTdPY/2.json";
+        const nftTitle = "Surf3";
 
-        const nftTitle = "Solana Collection Test #2"; // Cambiar a 1, 2, 3 , 4 segun corresponda...
+        // const collection_mint = new PublicKey("Fax4iVCxsQboHVVevwmZdxxPaUW8UMRzxSZVotjb6x1X")
+        // const collection_update_auth = new PublicKey("8xSyMdKQNCkRJB7LiebZ2yu26PTURxyRG7oS6f8Y4JUc")
+        // const collection_metadata_address = new PublicKey("3WTR93hWkeH1puXmwkHNQuVHxWMBH1WDqeMn7mas5X6o")
+        // const collection_master_edition = new PublicKey("5qfejuQqwFX1MVcphNpTMMPWBP1vg85QpRi9WDvYE2UU")
 
-        // Modificar por lo que dicen los logs de la coleccion
-        const collection_mint = new PublicKey("BrbxJ1gmVRieZPdt2ck55qUF4X48vqopuzQbSxwQYDE3")
+        const collection_mint = new PublicKey("48bL4xA4orAR1Ypn4JGvhz4qbf3yY5cuJpyEa4UuAQmJ")
         const collection_update_auth = new PublicKey("5ymCqhEd8u8NtnfWnyF1JxoTCfNbhSKJLk5A4mrLase7")
-        const collection_metadata_address = new PublicKey("FkiyyMmujN6G1pC4HsYdW7BkcYc1Rv5RT1Xw3LqsEdAk")
-        const collection_master_edition = new PublicKey("4KkoJ13mh3WYFqPyoofq5QBpWgs6tq7jUzJWvQJeBrq5")
-
-        const creatorAccount1 = new PublicKey("DRRPmFvafaZs5rc2PDDygrfd9ref2Jv7iYMU3kYmRWPd")
+        const collection_metadata_address = new PublicKey("5vrqvRNTtxtgQjkfpysoswTQsDTLXqwZ4CtmLPRQERxr")
+        const collection_master_edition = new PublicKey("6ZxGSRusLDcAhATRSuNxmMtjuA58zPpymYwbjDKuEvAG")
 
         console.log(collection_mint)
         console.log(mintKeypair.publicKey)
@@ -164,19 +236,19 @@ const Content: FC = () => {
             .accounts({
                 mintAuthority: wallet!.publicKey,
                 mint: mintKeypair.publicKey,
-                tokenAccount: tokenAccount,
+                tokenAccount: nftTokenAccount,
                 tokenProgram: TOKEN_PROGRAM_ID,
                 metadata: metadataAddress,
                 tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
                 payer: wallet!.publicKey,
+                systemProgram: web3.SystemProgram.programId,
+                rent: web3.SYSVAR_RENT_PUBKEY,
                 masterEdition: masterEditionAddress,
                 collectionUpdateAuth: wallet!.publicKey,
                 collectionMint: collection_mint,
                 collectionMetadata: collection_metadata_address,
                 collectionMasterEd: collection_master_edition,
-                creatorAccount1: creatorAccount1,
             })
-            .signers([mintKeypair])
             .rpc();
     }
 
